@@ -1,0 +1,513 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>VisionPool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+    <style>
+        :root{
+            --font-sans: 'Inter', 'Segoe UI', Arial, sans-serif;
+            --font-mono: 'Consolas', 'Courier New', monospace;
+            --border-radius-lg: 18px;
+            --border-radius-md: 12px;
+            --color-background-primary: #ffffff;
+            --color-background-secondary: #f8fafc;
+            --color-background-info: #e0f2fe;
+            --color-background-danger: #fee2e2;
+            --color-border-tertiary: #e2e8f0;
+            --color-border-secondary: #cbd5e1;
+            --color-border-danger: #fca5a5;
+            --color-text-primary: #0f172a;
+            --color-text-secondary: #64748b;
+            --color-text-tertiary: #94a3b8;
+            --color-text-info: #0284c7;
+            --color-text-success: #16a34a;
+            --color-text-danger: #dc2626;
+        }
+
+        body{
+            font-family: var(--font-sans);
+            background: #0f172a;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .app{
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .sidebar{
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .nav-item{
+            margin: 2px 6px;
+            font-weight: 500;
+        }
+
+        .nav-item.active{
+            background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+            color: white;
+        }
+
+        .nav-item.active i{ color: white; }
+
+        .stat-card{
+            transition: all .25s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,.05);
+        }
+
+        .stat-card:hover{
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,.08);
+        }
+
+        .video-feed{
+            border: 2px solid rgba(14,165,233,.15);
+            box-shadow: 0 8px 20px rgba(0,0,0,.12);
+        }
+
+        .ctrl-btn{
+            transition: all .2s ease;
+            font-weight: 500;
+        }
+
+        .ctrl-btn:hover{
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(0,0,0,.08);
+        }
+
+        .alert-item{ transition: all .2s ease; }
+        .alert-item:hover{ transform: translateX(4px); }
+
+        ::-webkit-scrollbar{ width: 8px; }
+        ::-webkit-scrollbar-track{ background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb{ background: #94a3b8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover{ background: #64748b; }
+
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:var(--font-sans)}
+        .app{display:flex;height:100vh;overflow:hidden;background:var(--color-background-secondary)}
+        .sidebar{width:200px;min-width:200px;background:var(--color-background-primary);border-right:0.5px solid var(--color-border-tertiary);display:flex;flex-direction:column}
+        .brand{padding:14px 16px;border-bottom:0.5px solid var(--color-border-tertiary)}
+        .brand-title{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+        .brand-sub{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+        .nav-section{padding:12px 8px 4px;font-size:11px;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em}
+        .nav-item{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--border-radius-md);cursor:pointer;font-size:13px;color:var(--color-text-secondary);transition:background .15s}
+        .nav-item:hover{background:var(--color-background-secondary)}
+        .nav-item.active{background:var(--color-background-info);color:var(--color-text-info)}
+        .nav-item i{font-size:16px}
+        .status-bar{margin-top:auto;padding:12px;border-top:0.5px solid var(--color-border-tertiary)}
+        .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;margin-right:6px}
+        .status-text{font-size:12px;color:var(--color-text-secondary)}
+        .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+        .topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary)}
+        .page-title{font-size:15px;font-weight:500;color:var(--color-text-primary)}
+        .topbar-right{display:flex;align-items:center;gap:10px}
+        .badge{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500}
+        .badge-live{background:#dcfce7;color:#15803d}
+        .badge-alert{background:#fef9c3;color:#a16207}
+        .content{flex:1;overflow:hidden;display:flex;gap:0}
+        .panel-left{flex:1;padding:14px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+        .panel-right{width:230px;min-width:230px;border-left:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);display:flex;flex-direction:column;overflow:hidden}
+        .video-feed{position:relative;background:#0f172a;border-radius:var(--border-radius-md);overflow:hidden;flex:1;min-height:0}
+        canvas#poolCanvas{display:block;width:100%;height:100%}
+        .feed-label{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.6);color:#fff;font-size:11px;padding:2px 7px;border-radius:4px}
+        .feed-fps{position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);color:#4ade80;font-size:11px;padding:2px 7px;border-radius:4px;font-family:var(--font-mono)}
+        .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+        .stat-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px}
+        .stat-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+        .stat-value{font-size:20px;font-weight:500;color:var(--color-text-primary)}
+        .stat-value.red{color:var(--color-text-danger)}
+        .stat-value.green{color:var(--color-text-success)}
+        .alerts-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:0.5px solid var(--color-border-tertiary)}
+        .alerts-title{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+        .alerts-list{flex:1;overflow-y:auto;padding:8px}
+        .alert-item{display:flex;gap:8px;padding:8px;border-radius:var(--border-radius-md);margin-bottom:6px;border:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary);cursor:pointer;transition:background .15s;align-items:flex-start}
+        .alert-item:hover{background:var(--color-background-secondary)}
+        .alert-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+        .alert-icon.run{background:#fef3c7;color:#d97706}
+        .alert-icon.dive{background:#fee2e2;color:#dc2626}
+        .alert-icon.attire{background:#ede9fe;color:#7c3aed}
+        .alert-icon.object{background:#dbeafe;color:#2563eb}
+        .alert-icon.wristband{background:#fef3c7;color:#d97706}
+        .alert-body{flex:1;min-width:0}
+        .alert-type{font-size:12px;font-weight:500;color:var(--color-text-primary)}
+        .alert-time{font-size:11px;color:var(--color-text-tertiary);margin-top:2px}
+        .alert-conf{font-size:11px;color:var(--color-text-secondary)}
+        .log-section{border-top:0.5px solid var(--color-border-tertiary);padding:10px 14px}
+        .log-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:8px}
+        .log-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+        .log-row:last-child{border-bottom:none}
+        .log-label{color:var(--color-text-secondary)}
+        .log-val{color:var(--color-text-primary);font-weight:500}
+        .controls-bar{display:flex;gap:8px;align-items:center}
+        .ctrl-btn{display:flex;align-items:center;gap:5px;font-size:12px;padding:5px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer}
+        .ctrl-btn:hover{background:var(--color-background-secondary)}
+        .ctrl-btn.active{background:var(--color-background-danger);border-color:var(--color-border-danger);color:var(--color-text-danger)}
+        .conf-label{font-size:12px;color:var(--color-text-secondary);display:flex;align-items:center;gap:6px;margin-left:auto}
+    </style>
+</head>
+<body>
+    <div class="app">
+    <div class="sidebar">
+        <div class="brand">
+        <div class="brand-title"><i class="ti ti-eye" aria-hidden="true" style="margin-right:5px;color:var(--color-text-info)"></i>VisionPool</div>
+        <div class="brand-sub">Compliance Monitor</div>
+        </div>
+        <div class="nav-section">Monitor</div>
+        <div class="nav-item active"><i class="ti ti-layout-dashboard"></i>Dashboard</div>
+        <div class="nav-item"><i class="ti ti-video"></i>Live feeds</div>
+        <div class="nav-item"><i class="ti ti-bell"></i>Alerts <span style="margin-left:auto;background:var(--color-background-danger);color:var(--color-text-danger);font-size:10px;padding:1px 6px;border-radius:10px" id="sideAlertCount">0</span></div>
+        <div class="nav-section">Manage</div>
+        <div class="nav-item"><i class="ti ti-clipboard-list"></i>Violation log</div>
+        <div class="nav-item"><i class="ti ti-chart-bar"></i>Reports</div>
+        <div class="nav-item"><i class="ti ti-settings"></i>Settings</div>
+        <div class="status-bar">
+        <span class="status-dot" id="statusDot"></span>
+        <span class="status-text" id="statusText">YOLOv8 running</span>
+        </div>
+    </div>
+
+    <div class="main">
+        <div class="topbar">
+        <div class="page-title">Live monitoring — Pool area A</div>
+        <div class="topbar-right">
+            <span class="badge badge-live"><i class="ti ti-circle-filled" style="font-size:9px;margin-right:3px" aria-hidden="true"></i>Live</span>
+            <span class="badge badge-alert" id="topAlertBadge">{{ total_today }} alert{{ total_today|pluralize }} today</span>
+            <button class="ctrl-btn" id="pauseBtn" onclick="togglePause()"><i class="ti ti-player-pause" id="pauseIcon"></i><span id="pauseLabel">Pause</span></button>
+        </div>
+        </div>
+
+        <div class="content">
+        <div class="panel-left">
+            <div class="controls-bar">
+            <button class="ctrl-btn" onclick="clearViolations()"><i class="ti ti-trash"></i> Clear</button>
+            <button class="ctrl-btn" onclick="forceViolation()"><i class="ti ti-alert-triangle"></i> Trigger violation</button>
+            <div class="conf-label">Threshold <input type="range" min="50" max="95" value="70" id="confSlider" step="1" style="width:70px"> <span id="confVal">70%</span></div>
+            </div>
+            <div class="video-feed">
+            <canvas id="poolCanvas"></canvas>
+            <div class="feed-label">CAM-01 · Pool deck</div>
+            <div class="feed-fps" id="fpsLabel">28 FPS</div>
+            </div>
+            <div class="stats-row">
+            <div class="stat-card"><div class="stat-label">Detections today</div><div class="stat-value" id="statTotal">{{ total_today }}</div></div>
+            <div class="stat-card"><div class="stat-label">Active violations</div><div class="stat-value red" id="statActive">0</div></div>
+            <div class="stat-card"><div class="stat-label">Model confidence</div><div class="stat-value green" id="statConf">—</div></div>
+            </div>
+        </div>
+
+        <div class="panel-right">
+            <div class="alerts-header">
+            <span class="alerts-title"><i class="ti ti-bell" aria-hidden="true" style="margin-right:4px"></i>Violation alerts</span>
+            <span style="font-size:11px;color:var(--color-text-tertiary)" id="alertCount">0</span>
+            </div>
+            <div class="alerts-list" id="alertsList">
+            <div class="no-violations-placeholder" style="text-align:center;padding:24px 12px;color:var(--color-text-tertiary);font-size:12px"><i class="ti ti-shield-check" style="font-size:24px;display:block;margin-bottom:6px" aria-hidden="true"></i>No violations detected</div>
+            </div>
+            <div class="log-section">
+            <div class="log-title">Session info</div>
+            <div class="log-row"><span class="log-label">Model</span><span class="log-val">YOLOv8n</span></div>
+            <div class="log-row"><span class="log-label">Backend</span><span class="log-val">Django 4.x</span></div>
+            <div class="log-row"><span class="log-label">Video lib</span><span class="log-val">OpenCV 4.x</span></div>
+            <div class="log-row"><span class="log-label">Classes</span><span class="log-val">5 rules</span></div>
+            <div class="log-row"><span class="log-label">Uptime</span><span class="log-val" id="uptime">00:00</span></div>
+            </div>
+        </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        const CSRF = document.querySelector('meta[name="csrf-token"]').content;
+
+        // ID of the last violation already in the DB when the page loaded.
+        // Polling only fetches violations created AFTER this point.
+        let pollingLastId = {{ last_violation_id }};
+
+        const canvas = document.getElementById('poolCanvas');
+        const ctx = canvas.getContext('2d');
+        let paused = false;
+        let alertCount = 0;
+        let startTime = Date.now();
+        let frameCount = 0;
+        let lastFps = Date.now();
+        let activeBoxes = [];
+        let confThreshold = 70;
+
+        document.getElementById('confSlider').addEventListener('input', function(){
+            confThreshold = parseInt(this.value);
+            document.getElementById('confVal').textContent = confThreshold + '%';
+        });
+
+        const VIOLATIONS = [
+            {type:'Running on deck',          apiType:'running',   icon:'ti-run',            cls:'run',      color:'#f59e0b', labelColor:'#92400e'},
+            {type:'Diving in restricted zone', apiType:'diving',    icon:'ti-arrow-bar-down', cls:'dive',     color:'#ef4444', labelColor:'#7f1d1d'},
+            {type:'Improper attire',           apiType:'attire',    icon:'ti-shirt',          cls:'attire',   color:'#8b5cf6', labelColor:'#3b0764'},
+            {type:'Prohibited object',         apiType:'object',    icon:'ti-package',        cls:'object',   color:'#3b82f6', labelColor:'#1e3a8a'},
+            {type:'Missing wristband',         apiType:'wristband', icon:'ti-id-badge-2',     cls:'wristband',color:'#f59e0b', labelColor:'#92400e'},
+        ];
+
+        // Maps API type strings back to the VIOLATIONS format for incoming poll data
+        const API_VIOL_MAP = {};
+        VIOLATIONS.forEach(v => { API_VIOL_MAP[v.apiType] = v; });
+
+        const PERSONS = [
+            {x:80,  y:100, w:30, h:60, dx:1.2,  dy:0.4,  color:'#94a3b8'},
+            {x:200, y:150, w:28, h:55, dx:-0.8, dy:0.6,  color:'#64748b'},
+            {x:320, y:80,  w:26, h:52, dx:0.5,  dy:-0.5, color:'#7c8fa0'},
+            {x:420, y:180, w:32, h:62, dx:-1.0, dy:0.3,  color:'#8899aa'},
+            {x:150, y:220, w:27, h:50, dx:0.9,  dy:-0.7, color:'#6b7a8d'},
+        ];
+
+        function resizeCanvas(){
+            const r = canvas.parentElement.getBoundingClientRect();
+            canvas.width = r.width;
+            canvas.height = r.height;
+        }
+        resizeCanvas();
+
+        function drawPool(){
+            const W = canvas.width, H = canvas.height;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0,0,W,H);
+            ctx.fillStyle = '#0e4d8a';
+            const pw=W*0.8, ph=H*0.55;
+            const px=(W-pw)/2, py=(H-ph)/2+10;
+            ctx.beginPath();
+            ctx.roundRect(px,py,pw,ph,8);
+            ctx.fill();
+            ctx.strokeStyle='#1e6fb5';
+            ctx.lineWidth=2;
+            ctx.stroke();
+            for(let i=1;i<5;i++){
+                ctx.strokeStyle='rgba(255,255,255,0.08)';
+                ctx.lineWidth=1;
+                ctx.beginPath();
+                ctx.moveTo(px+pw*i/5, py);
+                ctx.lineTo(px+pw*i/5, py+ph);
+                ctx.stroke();
+            }
+            ctx.fillStyle='rgba(255,255,255,0.04)';
+            ctx.fillRect(px, py, pw, ph*0.1);
+            ctx.fillStyle='#1e293b';
+            ctx.fillRect(0, py+ph, W, H-(py+ph));
+            ctx.fillRect(0, 0, W, py);
+            ctx.fillStyle='rgba(148,163,184,0.15)';
+            ctx.font='11px var(--font-sans)';
+            ctx.fillText('POOL AREA — NO RUNNING', px+pw*0.28, py-8);
+            ctx.fillStyle='rgba(239,68,68,0.25)';
+            ctx.fillRect(px+pw*0.7, py, pw*0.3, ph);
+            ctx.strokeStyle='rgba(239,68,68,0.5)';
+            ctx.lineWidth=1.5;
+            ctx.setLineDash([5,4]);
+            ctx.strokeRect(px+pw*0.7, py, pw*0.3, ph);
+            ctx.setLineDash([]);
+            ctx.fillStyle='rgba(239,68,68,0.6)';
+            ctx.font='9px var(--font-sans)';
+            ctx.fillText('NO DIVE', px+pw*0.78, py+14);
+        }
+
+        function movePerson(p){
+            p.x += p.dx; p.y += p.dy;
+            const W=canvas.width, H=canvas.height;
+            if(p.x<10||p.x>W-p.w-10) p.dx*=-1;
+            if(p.y<10||p.y>H-p.h-10) p.dy*=-1;
+            p.x=Math.max(10,Math.min(W-p.w-10,p.x));
+            p.y=Math.max(10,Math.min(H-p.h-10,p.y));
+        }
+
+        function drawPerson(p){
+            ctx.fillStyle=p.color;
+            ctx.beginPath();
+            ctx.arc(p.x+p.w/2, p.y+8, 9, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillRect(p.x+p.w/2-7, p.y+17, 14, p.h*0.55);
+            ctx.fillRect(p.x+p.w/2-12, p.y+20, 7, p.h*0.35);
+            ctx.fillRect(p.x+p.w/2+5, p.y+20, 7, p.h*0.35);
+            ctx.fillRect(p.x+p.w/2-6, p.y+17+p.h*0.55, 7, p.h*0.25);
+            ctx.fillRect(p.x+p.w/2, p.y+17+p.h*0.55, 7, p.h*0.25);
+        }
+
+        function drawDetectionBox(box){
+            const alpha = box.life / box.maxLife;
+            ctx.strokeStyle = box.violation.color;
+            ctx.lineWidth = 2;
+            ctx.globalAlpha = alpha;
+            ctx.strokeRect(box.x, box.y, box.w, box.h);
+            const lw = ctx.measureText(box.label).width + 10;
+            ctx.fillStyle = box.violation.color;
+            ctx.fillRect(box.x, box.y-18, lw, 18);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px var(--font-sans)';
+            ctx.fillText(box.label, box.x+5, box.y-5);
+            const cw = ctx.measureText(box.confStr).width+8;
+            ctx.fillStyle='rgba(0,0,0,0.7)';
+            ctx.fillRect(box.x+box.w-cw, box.y, cw, 16);
+            ctx.fillStyle='#fff';
+            ctx.font='10px var(--font-mono)';
+            ctx.fillText(box.confStr, box.x+box.w-cw+4, box.y+12);
+            ctx.globalAlpha=1;
+            box.life--;
+        }
+
+        // Attach a detection box to a specific person on the canvas
+        function spawnBox(personIdx, viol, conf){
+            const p = PERSONS[personIdx];
+            viol = viol || VIOLATIONS[Math.floor(Math.random()*VIOLATIONS.length)];
+            conf = (conf !== undefined) ? conf : Math.floor(confThreshold + Math.random()*(98-confThreshold));
+            activeBoxes.push({
+                x:p.x-6, y:p.y-6, w:p.w+12, h:p.h+12,
+                violation:viol, life:90, maxLife:90,
+                label:viol.type, confStr:conf+'%', conf,
+                personIdx
+            });
+            addAlert(viol, conf);
+        }
+
+        // Spawn a detection box at a random canvas position (used for API-sourced violations)
+        function spawnBoxDirect(viol, conf){
+            if(paused) return;
+            const W = canvas.width, H = canvas.height;
+            const x = 60 + Math.random() * (W - 180);
+            const y = 30 + Math.random() * (H - 110);
+            activeBoxes.push({
+                x, y, w:44, h:72,
+                violation:viol, life:90, maxLife:90,
+                label:viol.type, confStr:conf+'%', conf,
+                personIdx:-1
+            });
+            document.getElementById('statActive').textContent = activeBoxes.length;
+        }
+
+        function addAlert(viol, conf){
+            alertCount++;
+            document.getElementById('alertCount').textContent = alertCount;
+            document.getElementById('sideAlertCount').textContent = alertCount;
+            document.getElementById('topAlertBadge').textContent = alertCount + ' alert' + (alertCount===1?'':'s') + ' today';
+            document.getElementById('statConf').textContent = conf+'%';
+
+            const list = document.getElementById('alertsList');
+            const placeholder = list.querySelector('.no-violations-placeholder');
+            if(placeholder) placeholder.remove();
+
+            const now = new Date();
+            const ts = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')+':'+now.getSeconds().toString().padStart(2,'0');
+            const item = document.createElement('div');
+            item.className = 'alert-item';
+            item.innerHTML = `<div class="alert-icon ${viol.cls}"><i class="ti ${viol.icon}" aria-hidden="true"></i></div>
+                <div class="alert-body">
+                <div class="alert-type">${viol.type}</div>
+                <div class="alert-time">${ts}</div>
+                <div class="alert-conf">Confidence: ${conf}%</div>
+                </div>`;
+            list.insertBefore(item, list.firstChild);
+            if(list.children.length>10) list.removeChild(list.lastChild);
+            document.getElementById('statActive').textContent = activeBoxes.length;
+        }
+
+        function clearViolations(){
+            activeBoxes=[];
+            document.getElementById('statActive').textContent='0';
+        }
+
+        // Triggers a violation on the canvas AND saves it to the Django database
+        async function forceViolation(){
+            if(paused) return;
+            const personIdx = Math.floor(Math.random()*PERSONS.length);
+            const viol = VIOLATIONS[Math.floor(Math.random()*VIOLATIONS.length)];
+            const conf = Math.floor(confThreshold + Math.random()*(98-confThreshold));
+            spawnBox(personIdx, viol, conf);
+            try {
+                const res = await fetch('/api/violations/', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json','X-CSRFToken':CSRF},
+                    body: JSON.stringify({type:viol.apiType, confidence:conf/100, camera_id:'CAM-01'}),
+                });
+                const data = await res.json();
+                // Advance the polling cursor past this manually-triggered ID so polling won't duplicate it
+                if(data.id > pollingLastId) pollingLastId = data.id;
+            } catch(e) {}
+        }
+
+        function togglePause(){
+            paused=!paused;
+            document.getElementById('pauseBtn').classList.toggle('active',paused);
+            document.getElementById('pauseIcon').className='ti '+(paused?'ti-player-play':'ti-player-pause');
+            document.getElementById('pauseLabel').textContent=paused?'Resume':'Pause';
+            document.getElementById('statusDot').style.background=paused?'#f59e0b':'#22c55e';
+            document.getElementById('statusText').textContent=paused?'Paused':'YOLOv8 running';
+        }
+
+        // Polls the Django API every 2 seconds for new violations from the detection script
+        async function pollViolations(){
+            try {
+                const res = await fetch('/api/violations/?since_id=' + pollingLastId);
+                const data = await res.json();
+                if(data.violations && data.violations.length > 0){
+                    data.violations.forEach(v => {
+                        if(v.id > pollingLastId) pollingLastId = v.id;
+                        const viol = API_VIOL_MAP[v.type] || VIOLATIONS[0];
+                        const conf = Math.round(v.confidence * 100);
+                        addAlert(viol, conf);
+                        spawnBoxDirect(viol, conf);
+                    });
+                }
+                // Server is authoritative for the "Detections today" counter
+                if(data.total !== undefined){
+                    document.getElementById('statTotal').textContent = data.total;
+                }
+            } catch(e) {}
+        }
+
+        let violationTimer = 0;
+        let fpsDisplay = 28;
+
+        function loop(){
+            if(!paused){
+                resizeCanvas();
+                drawPool();
+                PERSONS.forEach(p=>movePerson(p));
+                PERSONS.forEach(p=>drawPerson(p));
+                activeBoxes = activeBoxes.filter(b=>b.life>0);
+                activeBoxes.forEach(b=>drawDetectionBox(b));
+                document.getElementById('statActive').textContent = activeBoxes.length;
+
+                // Auto-spawn simulated violations on the canvas (visual demo only, not saved to DB)
+                violationTimer++;
+                if(violationTimer > 120 + Math.random()*80){
+                    violationTimer=0;
+                    spawnBox(Math.floor(Math.random()*PERSONS.length));
+                }
+
+                frameCount++;
+                const now = Date.now();
+                if(now - lastFps > 1000){
+                    fpsDisplay = Math.round(frameCount * 1000 / (now-lastFps));
+                    frameCount=0; lastFps=now;
+                    document.getElementById('fpsLabel').textContent = fpsDisplay+' FPS';
+                }
+
+                const elapsed = Math.floor((Date.now()-startTime)/1000);
+                const mm=String(Math.floor(elapsed/60)).padStart(2,'0');
+                const ss=String(elapsed%60).padStart(2,'0');
+                document.getElementById('uptime').textContent=mm+':'+ss;
+            }
+            requestAnimationFrame(loop);
+        }
+
+        loop();
+        pollViolations();
+        setInterval(pollViolations, 2000);
+    </script>
+</body>
+</html>

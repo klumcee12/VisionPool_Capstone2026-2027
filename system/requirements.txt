@@ -1,0 +1,14 @@
+# Core web framework
+django>=4.2,<5.0
+
+# Computer vision pipeline
+opencv-python>=4.8
+
+# YOLOv8 object detection
+ultralytics>=8.0
+
+# HTTP requests (detection script → Django API)
+requests>=2.31
+
+# Image handling (used by Django / Pillow-dependent features)
+Pillow>=10.0
