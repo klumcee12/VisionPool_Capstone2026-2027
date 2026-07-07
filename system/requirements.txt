@@ -10,5 +10,8 @@ ultralytics>=8.0
 # HTTP requests (detection script → Django API)
 requests>=2.31
 
+# Loads CAMERA_SOURCE and other settings from a local .env file
+python-dotenv>=1.0
+
 # Image handling (used by Django / Pillow-dependent features)
 Pillow>=10.0

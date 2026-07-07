@@ -1,6 +1,14 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# RTSP URL or webcam index for the live camera feed (same source run_detection.py uses).
+CAMERA_SOURCE_RAW = os.environ.get('CAMERA_SOURCE', '0')
+try:
+    CAMERA_SOURCE = int(CAMERA_SOURCE_RAW)
+except ValueError:
+    CAMERA_SOURCE = CAMERA_SOURCE_RAW
 
 SECRET_KEY = 'django-insecure-visionpool-dev-key-change-before-production'
 

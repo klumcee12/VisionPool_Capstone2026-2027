@@ -28,6 +28,10 @@ import requests
 from datetime import datetime
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent.parent / '.env')
+
 API_URL           = os.environ.get('VISIONPOOL_API',    'http://127.0.0.1:8000/api/violations/')
 CAMERA_SOURCE_RAW = os.environ.get('CAMERA_SOURCE',    '0')
 MODEL_PATH        = os.environ.get('MODEL_PATH',        'best.pt')
